@@ -1,0 +1,49 @@
+Brandon Edmunds
+Dr. Yin
+CSE 582
+2/15/23
+
+Word: cat  Position in vocabulary: 6191
+
+                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                               dog              0.898914
+                                            feline              0.866423
+                                             tabby              0.851686
+                                           raccoon              0.841564
+                                            kitten              0.840802
+                                             puppy              0.832842
+                                               pug              0.826084
+                                              mutt              0.825741
+                                         chihuahua              0.812098
+                                           kittens              0.797809
+
+Word: she  Position in vocabulary: 80
+
+                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                               She              0.884506
+                                               her              0.800818
+                                           herself              0.793849
+                                                he              0.765887
+                                              hers              0.764277
+                                            mother              0.686384
+                                             woman              0.668125
+                                           husband              0.666423
+                                                He              0.661089
+                                           someone              0.643756
+
+Word: like  Position in vocabulary: 103
+
+                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                             weird              0.728423
+                                             crazy              0.719306
+                                             scary              0.684337
+                                             silly              0.667378
+                                              nice              0.654588
+                                            boring              0.649717
+                                         Sometimes              0.649426
+                                            unlike              0.648727
+                                               odd              0.645181
+                                              cute              0.638302
