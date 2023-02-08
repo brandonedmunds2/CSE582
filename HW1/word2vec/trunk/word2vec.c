@@ -419,7 +419,7 @@ void *TrainModelThread(void *id) {
     for (c = 0; c < layer1_size; c++) neu1e[c] = 0;
     next_random = next_random * (unsigned long long)25214903917 + 11;
     b = next_random % window;
-    // Word2Vec requires a file with tokenized values seperated by spaces or newlines as the input
+    // Word2Vec requires a file with tokenized values seperated by spaces or tab or EOL as the input
     // additional parameters include the size of the word embeddings,
     // a threshold for down-sampling frequent words,
     // a option to enable hierarchical softmax,
