@@ -1,3 +1,8 @@
+// Brandon Edmunds
+// Dr. Yin
+// CSE 582
+// 2/15/23
+
 //  Copyright 2013 Google Inc. All Rights Reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
@@ -59,6 +64,7 @@ void InitUnigramTable() {
   d1 = pow(vocab[i].cn, power) / train_words_pow;
   for (a = 0; a < table_size; a++) {
     table[a] = i;
+    // more common words have more entries
     if (a / (double)table_size > d1) {
       i++;
       d1 += pow(vocab[i].cn, power) / train_words_pow;
@@ -367,6 +373,7 @@ void *TrainModelThread(void *id) {
   real f, g;
   clock_t now;
   real *neu1 = (real *)calloc(layer1_size, sizeof(real));
+  // errors for backprop
   real *neu1e = (real *)calloc(layer1_size, sizeof(real));
   FILE *fi = fopen(train_file, "rb");
   fseek(fi, file_size / (long long)num_threads * (long long)id, SEEK_SET);
@@ -386,6 +393,7 @@ void *TrainModelThread(void *id) {
     }
     if (sentence_length == 0) {
       while (1) {
+        // uses indexes for words
         word = ReadWordIndex(fi);
         if (feof(fi)) break;
         if (word == -1) continue;
@@ -397,6 +405,7 @@ void *TrainModelThread(void *id) {
           next_random = next_random * (unsigned long long)25214903917 + 11;
           if (ran < (next_random & 0xFFFF) / (real)65536) continue;
         }
+        // build sentence
         sen[sentence_length] = word;
         sentence_length++;
         if (sentence_length >= MAX_SENTENCE_LENGTH) break;
@@ -415,9 +424,11 @@ void *TrainModelThread(void *id) {
     }
     word = sen[sentence_position];
     if (word == -1) continue;
+    // init hidden units and error
     for (c = 0; c < layer1_size; c++) neu1[c] = 0;
     for (c = 0; c < layer1_size; c++) neu1e[c] = 0;
     next_random = next_random * (unsigned long long)25214903917 + 11;
+    // window index
     b = next_random % window;
     // Word2Vec requires a file with tokenized values seperated by spaces or tab or EOL as the input
     // additional parameters include the size of the word embeddings,
@@ -449,7 +460,7 @@ void *TrainModelThread(void *id) {
       }
       // check for context words
       if (cw) {
-        //scale based on # of context words used (average them)
+        //scale based on # of context words used (average context words)
         for (c = 0; c < layer1_size; c++) neu1[c] /= cw;
         // not using hierarchical softmax
         if (hs) for (d = 0; d < vocab[word].codelen; d++) {
@@ -482,6 +493,7 @@ void *TrainModelThread(void *id) {
             target = table[(next_random >> 16) % table_size];
             if (target == 0) target = next_random % (vocab_size - 1) + 1;
             if (target == word) continue;
+            // label is 0 for negative examples
             label = 0;
           }
           l2 = target * layer1_size;
