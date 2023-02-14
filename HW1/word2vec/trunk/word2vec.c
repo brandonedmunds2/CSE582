@@ -29,7 +29,7 @@
 #define MAX_SENTENCE_LENGTH 1000
 #define MAX_CODE_LENGTH 40
 
-const int vocab_hash_size = 10000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
+const int vocab_hash_size = 10000000;  // Maximum 10 * 0.7 = 7M words in the vocabulary
 
 typedef float real;                    // Precision of float numbers
 
@@ -54,9 +54,13 @@ int hs = 0, negative = 5;
 const int table_size = 1e8;
 int *table;
 
+// fill table with word indices where more frequent words take more
+//   spaces in the table
 void InitUnigramTable() {
   int a, i;
   double train_words_pow = 0;
+  // 0.75 generally makes less frequent words more common in the table compared to
+  //   having power = 1
   double d1, power = 0.75;
   table = (int *)malloc(table_size * sizeof(int));
   for (a = 0; a < vocab_size; a++) train_words_pow += pow(vocab[a].cn, power);
@@ -265,6 +269,8 @@ void CreateBinaryTree() {
   free(parent_node);
 }
 
+// get the words from the training file and put them into the vocab,
+//   setting up the appropriate data structures
 void LearnVocabFromTrainFile() {
   char word[MAX_STRING];
   FILE *fin;
@@ -301,6 +307,7 @@ void LearnVocabFromTrainFile() {
   fclose(fin);
 }
 
+// saves the vocabularly to a file
 void SaveVocab() {
   long long i;
   FILE *fo = fopen(save_vocab_file, "wb");
@@ -308,6 +315,8 @@ void SaveVocab() {
   fclose(fo);
 }
 
+// get the words from the vocab file and put them into the vocab,
+//   setting up the appropriate data structures
 void ReadVocab() {
   long long a, i = 0;
   char c;
@@ -341,6 +350,8 @@ void ReadVocab() {
   fclose(fin);
 }
 
+// initialize the neural network having 1 hidden layer
+// initialize the binary vocab codes using Huffman tree
 void InitNet() {
   long long a, b;
   unsigned long long next_random = 1;
@@ -365,6 +376,7 @@ void InitNet() {
   CreateBinaryTree();
 }
 
+// each thread trains the model
 void *TrainModelThread(void *id) {
   long long a, b, d, cw, word, last_word, sentence_length = 0, sentence_position = 0;
   long long word_count = 0, last_word_count = 0, sen[MAX_SENTENCE_LENGTH + 1];
@@ -378,6 +390,7 @@ void *TrainModelThread(void *id) {
   FILE *fi = fopen(train_file, "rb");
   fseek(fi, file_size / (long long)num_threads * (long long)id, SEEK_SET);
   while (1) {
+    // bookkeeping
     if (word_count - last_word_count > 10000) {
       word_count_actual += word_count - last_word_count;
       last_word_count = word_count;
@@ -589,6 +602,9 @@ void *TrainModelThread(void *id) {
   pthread_exit(NULL);
 }
 
+// model training wrapper for TrainModelThread
+// handles reading data, model initialization, data initialization, writing outputs,
+//   and training the model
 void TrainModel() {
   long a, b, c, d;
   FILE *fo;
@@ -742,6 +758,7 @@ int main(int argc, char **argv) {
   vocab = (struct vocab_word *)calloc(vocab_max_size, sizeof(struct vocab_word));
   vocab_hash = (int *)calloc(vocab_hash_size, sizeof(int));
   expTable = (real *)malloc((EXP_TABLE_SIZE + 1) * sizeof(real));
+  // used for prediction scaling (softmax)
   for (i = 0; i < EXP_TABLE_SIZE; i++) {
     expTable[i] = exp((i / (real)EXP_TABLE_SIZE * 2 - 1) * MAX_EXP); // Precompute the exp() table
     expTable[i] = expTable[i] / (expTable[i] + 1);                   // Precompute f(x) = x / (x + 1)
